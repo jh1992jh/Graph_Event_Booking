@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import AuthContext from "../../context/auth-context";
 import Success from "../common/Success";
+import Error from "../common/Error";
 
 class CreateEvent extends Component {
   state = {
@@ -11,7 +12,9 @@ class CreateEvent extends Component {
     description: "",
     date: "",
     showSuccess: false,
-    successTimeout: null
+    successTimeout: null,
+    errors: null,
+    errorTimeout: null
   };
 
   static contextType = AuthContext;
@@ -59,11 +62,21 @@ class CreateEvent extends Component {
         }
       });
 
-      if (createdEvent.status !== 200 && createdEvent.status !== 201) {
-        throw new Error("Error creating the event, try again later!");
-      }
-
       const parsedEvent = await createdEvent.json();
+
+      if (parsedEvent.errors !== undefined) {
+        if (parsedEvent.errors.length > 0) {
+          let errorTimeout = setTimeout(
+            () => this.setState({ errors: null }),
+            3000
+          );
+          this.setState({
+            errors: parsedEvent.errors[0].message,
+            errorTimeout: errorTimeout
+          });
+          return;
+        }
+      }
 
       this.setState(
         {
@@ -87,9 +100,10 @@ class CreateEvent extends Component {
   }
 
   componentWillUnmount() {
-    const { successTimeout } = this.state;
+    const { successTimeout, errorTimeout } = this.state;
     clearTimeout(successTimeout);
-    this.setState({ successTimeout: null });
+    clearTimeout(errorTimeout);
+    this.setState({ successTimeout: null, errorTimeout: null });
   }
 
   onInputChange = e => {
@@ -103,7 +117,8 @@ class CreateEvent extends Component {
       price,
       description,
       date,
-      showSuccess
+      showSuccess,
+      errors
     } = this.state;
 
     return (
@@ -173,6 +188,7 @@ class CreateEvent extends Component {
             date={new Date(date).toISOString()}
           />
         )}
+        {errors && <Error error={errors} />}
       </div>
     );
   }

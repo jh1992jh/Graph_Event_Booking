@@ -56,7 +56,7 @@ class Navbar extends Component {
 
   render() {
     const { userId, username, profilePic } = this.state;
-    return userId !== null && username !== null && profilePic !== null ? (
+    return userId !== null && username !== null ? (
       <nav>
         <div className="logo-wrapper">
           <NavLink to="/">

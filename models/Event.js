@@ -13,7 +13,8 @@ const EventSchema = new Schema({
   },
   price: {
     type: Number,
-    required: true
+    required: true,
+    default: 0.0
   },
   date: {
     type: Date,

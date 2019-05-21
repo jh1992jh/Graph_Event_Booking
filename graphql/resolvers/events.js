@@ -3,6 +3,8 @@ const { transformEvent } = require("./merge");
 
 const User = require("../../models/User");
 
+const eventValidation = require("../../validation/event");
+
 module.exports = {
   events: async () => {
     try {
@@ -26,13 +28,32 @@ module.exports = {
     if (!req.isAuth) {
       throw new Error("Login the create an event");
     }
+
+    const {
+      title,
+      description,
+      price,
+      date,
+      eventImg,
+      eventLocation
+    } = args.eventInput;
+
+    eventValidation(
+      title,
+      description,
+
+      date,
+      eventImg,
+      eventLocation
+    );
+
     const event = new Event({
-      title: args.eventInput.title,
-      description: args.eventInput.description,
-      price: +args.eventInput.price,
-      date: args.eventInput.date,
-      eventImg: args.eventInput.eventImg,
-      eventLocation: args.eventInput.eventLocation,
+      title: title,
+      description: description,
+      price: +price,
+      date: date,
+      eventImg: eventImg,
+      eventLocation: eventLocation,
       user: req.userId
     });
     let createdEvent;
@@ -50,6 +71,7 @@ module.exports = {
 
       return createdEvent;
     } catch (err) {
+      console.log(err);
       throw err;
     }
     //return event;

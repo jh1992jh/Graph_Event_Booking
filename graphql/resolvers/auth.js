@@ -3,6 +3,8 @@ const User = require("../../models/User");
 const Event = require("../../models/Event");
 const Booking = require("../../models/Booking");
 
+const userValidation = require("../../validation/user");
+
 // const findBookings = require("./merge");
 const { transformEvent } = require("./merge");
 
@@ -16,6 +18,12 @@ module.exports = {
       if (existingUser) {
         throw new Error("Try another email");
       }
+
+      userValidation(
+        args.userInput.email,
+        args.userInput.username,
+        args.userInput.password
+      );
 
       const hashedPassword = await bcrypt.hash(args.userInput.password, 12);
 

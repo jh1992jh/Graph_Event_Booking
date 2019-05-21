@@ -47,12 +47,18 @@ const Register = ({ setShowform }) => {
 
       const parsedRes = await res.json();
 
-      if (parsedRes.errors.length > 0) {
-        setError(parsedRes.errors[0].message);
+      if (parsedRes.errors !== undefined) {
+        if (parsedRes.errors.length > 0) {
+          setError(parsedRes.errors[0].message);
+          return;
+        }
       }
+
+      setShowform("login");
 
       return parsedRes;
     } catch (err) {
+      console.log(err);
       throw new Error("Registering failed");
     }
   };
@@ -76,14 +82,20 @@ const Register = ({ setShowform }) => {
         id="username"
         placeholder="Username *"
         value={username}
-        onChange={e => setUsername(e.target.value)}
+        onChange={e => {
+          setUsername(e.target.value);
+          setError(null);
+        }}
       />
       <input
         type="password"
         name="password"
         placeholder="Password *"
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={e => {
+          setPassword(e.target.value);
+          setError(null);
+        }}
       />
       <button type="submit">Sign up</button>
       <button

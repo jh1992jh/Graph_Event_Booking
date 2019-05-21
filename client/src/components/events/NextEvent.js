@@ -1,6 +1,8 @@
 import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 
+import placeholder from "../common/placeholder.png";
+
 const NextEvent = ({ events }) => {
   events.sort((date1, date2) => {
     return new Date(date1.date) - new Date(date2.date);
@@ -18,6 +20,10 @@ const NextEvent = ({ events }) => {
             <div className="img-wrapper">
               <img
                 src={event.eventImg}
+                onError={e => {
+                  e.target.onerror = null;
+                  e.target.src = placeholder;
+                }}
                 alt="Next event"
                 className="next-event-thumb"
               />

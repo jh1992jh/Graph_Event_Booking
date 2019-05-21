@@ -3,6 +3,7 @@ import CommentModal from "../modal/CommentModal";
 import AuthContext from "../../context/auth-context";
 import BookEvent from "../bookings/BookEvent";
 import Loading from "../common/Loading";
+import placeholder from "../common/placeholder.png";
 
 class SingleEventPage extends Component {
   state = {
@@ -127,7 +128,15 @@ class SingleEventPage extends Component {
       <div className="single-event-page">
         <section className="pic-and-title">
           <div className="img-wrapper">
-            <img src={event.eventImg} alt="event" className="event-img" />
+            <img
+              src={event.eventImg}
+              onError={e => {
+                e.target.onerror = null;
+                e.target.src = placeholder;
+              }}
+              alt="event"
+              className="event-img"
+            />
           </div>
           <h3 className="event-title">{event.title}</h3>
         </section>

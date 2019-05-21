@@ -171,7 +171,14 @@ class Profile extends Component {
         {isLoaded ? (
           <Fragment>
             <section className="profile-pic-username">
-              <img src={profilePic ? profilePic : avatar} alt="profile" />
+              <img
+                src={profilePic}
+                onError={e => {
+                  e.target.onerror = null;
+                  e.target.src = avatar;
+                }}
+                alt="profile"
+              />
               <h1>{username}</h1>
             </section>
             <section className="profile-info">

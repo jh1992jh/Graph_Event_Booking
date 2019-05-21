@@ -1,4 +1,5 @@
 import React from "react";
+import avatar from "../common/avatar.png";
 
 const EditProfileModal = ({
   bioInput,
@@ -16,7 +17,14 @@ const EditProfileModal = ({
         </span>
       </header>
       <section className="modal-content">
-        <img src={profilePicInput} alt="?" />
+        <img
+          src={profilePicInput}
+          onError={e => {
+            e.target.onerror = null;
+            e.target.src = avatar;
+          }}
+          alt="?"
+        />
         <form>
           <input
             type="text"

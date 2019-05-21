@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 import format from "date-fns/format";
+import placeholder from "../common/placeholder.png";
 
 const Event = ({
   title,
@@ -20,7 +21,14 @@ const Event = ({
         </header>
         <div className="event-body">
           <div className="img-wrapper">
-            <img src={eventImg} alt="event" />
+            <img
+              src={eventImg}
+              onError={e => {
+                e.target.onerror = null;
+                e.target.src = placeholder;
+              }}
+              alt="event"
+            />
           </div>
           <div className="event-info">
             <h4>{eventLocation}</h4>
