@@ -2,6 +2,7 @@ import React, { Component, Fragment } from "react";
 import format from "date-fns/format";
 import AuthContext from "../../context/auth-context";
 import avatar from "../common/avatar.png";
+import Loading from "../common/Loading";
 import EditProfileModal from "../modal/EditProfileModal";
 import ProfileEventsModal from "../modal/ProfileEventsModal";
 
@@ -226,7 +227,7 @@ class Profile extends Component {
             </section>
           </Fragment>
         ) : (
-          <h3>Loading</h3>
+          <Loading />
         )}
       </div>
     );

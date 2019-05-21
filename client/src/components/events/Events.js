@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import AuthContext from "../../context/auth-context";
-// import Modal from "../modal/Modal";
 import EventList from "./EventList";
 import SearchEvents from "./SearchEvents";
 import NextEvent from "./NextEvent";
+import Loading from "../common/Loading";
 
 class Events extends Component {
   state = {
@@ -191,7 +191,7 @@ class Events extends Component {
         />
       );
     } else if (events.length === 0 && loading) {
-      displayEvents = <h3>Loading</h3>;
+      displayEvents = <Loading />;
     } else if (events.length === 0 && !loading) {
       displayEvents = <p>There are no upcoming events at the moment.</p>;
     }

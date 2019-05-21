@@ -1,14 +1,8 @@
 import React from "react";
+import loadingGif from "./Cube-1s-200px.gif";
 
 const Loading = () => (
-  <div className="lds-css ng-scope" style={{ width: "200px", height: "200px" }}>
-    <div style={{ width: "100%", height: "100%" }} className="lds-cube">
-      <div />
-      <div />
-      <div />
-      <div />
-    </div>
-  </div>
+  <img src={loadingGif} className="loading" alt="Loading" />
 );
 
 export default Loading;
