@@ -52,7 +52,7 @@ class App extends Component {
             token,
             userId,
             username,
-
+            errors: null,
             logout: this.logout,
             login: this.login
           }}

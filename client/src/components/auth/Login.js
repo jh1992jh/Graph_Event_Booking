@@ -3,30 +3,40 @@ import { withRouter } from "react-router-dom";
 
 import AuthContext from "../../context/auth-context";
 
+import Error from "../common/Error";
+
 class Login extends Component {
   state = {
     email: "",
-    password: ""
+    password: "",
+    errors: null
   };
 
   static contextType = AuthContext;
 
   onInputChange = e => {
+    const { errors } = this.state;
     this.setState({ [e.target.name]: e.target.value });
+
+    if (errors) {
+      this.setState({ errors: null });
+    }
   };
 
   async submitSingup(e) {
-    e.preventDefault();
-    const { email, password } = this.state;
+    try {
+      e.preventDefault();
+      const { email, password } = this.state;
 
-    const isInvalid = email.trim().length === 0 || password.trim().length === 0;
+      const isInvalid =
+        email.trim().length === 0 || password.trim().length === 0;
 
-    if (isInvalid) {
-      return;
-    }
+      if (isInvalid) {
+        return;
+      }
 
-    const reqBody = {
-      query: `
+      const reqBody = {
+        query: `
         query Login($email: String!, $password: String!){
             login(email: $email, password: $password) {
                 userId
@@ -36,45 +46,50 @@ class Login extends Component {
             }
         }
       `,
-      variables: {
-        email,
-        password
-      }
-    };
+        variables: {
+          email,
+          password
+        }
+      };
 
-    const res = await fetch(process.env.REACT_APP_API_ENDPOINT, {
-      method: "POST",
-      body: JSON.stringify(reqBody),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+      const res = await fetch(process.env.REACT_APP_API_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify(reqBody),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
 
-    if (res.status !== 200 && res.status !== 201) {
-      throw new Error("Login failed, try again.");
+      if (res.status !== 200 && res.status !== 201) {
+        const error = await res.json();
+        this.setState({ errors: error.errors[0].message });
+        return;
+      }
+
+      const parsedResponse = await res.json();
+
+      this.context.login(
+        `Bearer ${parsedResponse.data.login.token}`,
+        parsedResponse.data.login.userId,
+        parsedResponse.data.login.tokenExp,
+        parsedResponse.data.login.username
+      );
+
+      localStorage.setItem(
+        "evauthToken",
+        `Bearer ${parsedResponse.data.login.token}`
+      );
+
+      this.props.history.push("/events");
+      return parsedResponse;
+    } catch (err) {
+      console.log(err);
     }
-
-    const parsedResponse = await res.json();
-
-    this.context.login(
-      `Bearer ${parsedResponse.data.login.token}`,
-      parsedResponse.data.login.userId,
-      parsedResponse.data.login.tokenExp,
-      parsedResponse.data.login.username
-    );
-
-    localStorage.setItem(
-      "evauthToken",
-      `Bearer ${parsedResponse.data.login.token}`
-    );
-
-    this.props.history.push("/events");
-    return parsedResponse;
   }
 
   render() {
     const { setShowform } = this.props;
-    const { email, password } = this.state;
+    const { email, password, errors } = this.state;
     return (
       <form className="auth-form" onSubmit={e => this.submitSingup(e)}>
         <input
@@ -100,6 +115,7 @@ class Login extends Component {
         >
           New User? Click here!
         </button>
+        {errors && <Error error={errors} />}
       </form>
     );
   }

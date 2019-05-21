@@ -169,6 +169,7 @@ class CreateEvent extends Component {
           <Success
             title={title}
             eventLocation={eventLocation}
+            action="Created"
             date={new Date(date).toISOString()}
           />
         )}

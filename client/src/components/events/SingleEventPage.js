@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import CommentModal from "../modal/CommentModal";
 import AuthContext from "../../context/auth-context";
 import BookEvent from "../bookings/BookEvent";
+import Loading from "../common/Loading";
 
 class SingleEventPage extends Component {
   state = {
@@ -176,7 +177,9 @@ class SingleEventPage extends Component {
           </ul>
         </section>
       </div>
-    ) : null;
+    ) : (
+      <Loading />
+    );
   }
 }
 

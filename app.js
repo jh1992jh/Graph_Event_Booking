@@ -46,7 +46,7 @@ mongoose
   .then(() => {
     const port = process.env.PORT || 8000;
 
-    app.listen(port, console.log(`The server is on ${port}`));
+    app.listen(8000, console.log(`The server is on ${port}`));
     console.log("Server Running");
   })
   .catch(err => console.log(err));

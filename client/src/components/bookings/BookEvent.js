@@ -1,7 +1,13 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import AuthContext from "../../context/auth-context";
 
+import Success from "../common/Success";
+
 class BookEvent extends Component {
+  state = {
+    showSuccess: false,
+    timerId: null
+  };
   static contextType = AuthContext;
 
   async bookEventFun(eventId) {
@@ -33,19 +39,41 @@ class BookEvent extends Component {
       const parsedBooking = await booking.json();
 
       const finalResult = parsedBooking.data.bookEvent;
-      console.log(finalResult);
+      this.setState({ showSuccess: true });
+      const successTimeout = setTimeout(
+        () => this.setState({ showSuccess: false }),
+        3000
+      );
+      this.setState({ timerId: successTimeout });
       return finalResult;
     } catch (err) {
       throw err;
     }
   }
 
+  componentWillUnmount() {
+    const { timerId } = this.state;
+    clearTimeout(timerId);
+    this.setState({ timerId: null });
+  }
+
   render() {
     const { eventId } = this.props;
+    const { showSuccess } = this.state;
     return (
-      <button onClick={this.bookEventFun.bind(this, eventId)}>
-        Book Event
-      </button>
+      <Fragment>
+        <button onClick={this.bookEventFun.bind(this, eventId)}>
+          Book Event
+        </button>
+        {showSuccess && (
+          <Success
+            action="Booked"
+            title={null}
+            eventLocation={null}
+            date={null}
+          />
+        )}
+      </Fragment>
     );
   }
 }

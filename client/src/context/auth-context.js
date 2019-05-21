@@ -22,7 +22,7 @@ export default React.createContext({
   token: localStorage.evauthToken ? localStorage.evauthToken : null,
   userId: checkToken() !== null ? checkToken().userId : null,
   username: checkToken() !== null ? checkToken().username : null,
-
+  errors: null,
   login: (token, userid, tokenExp, username) => {},
   logout: () => {}
 });

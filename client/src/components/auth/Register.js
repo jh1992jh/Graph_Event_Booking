@@ -1,24 +1,27 @@
 import React, { useState } from "react";
+import Error from "../common/Error";
 
 const Register = ({ setShowform }) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setError] = useState("");
 
-  const submitSignup = e => {
-    e.preventDefault();
+  const submitSignup = async e => {
+    try {
+      e.preventDefault();
 
-    const isInvalid =
-      email.trim().length === 0 ||
-      username.trim().length === 0 ||
-      password.trim().length === 0;
+      const isInvalid =
+        email.trim().length === 0 ||
+        username.trim().length === 0 ||
+        password.trim().length === 0;
 
-    if (isInvalid) {
-      return;
-    }
+      if (isInvalid) {
+        return;
+      }
 
-    const reqBody = {
-      query: `
+      const reqBody = {
+        query: `
         mutation CreateUser($email: String!, $username: String!, $password: String!){
           createUser(userInput:{email: $email, username: $username, password: $password}) {
             _id
@@ -27,29 +30,31 @@ const Register = ({ setShowform }) => {
           }
         }
       `,
-      variables: {
-        email,
-        username,
-        password
-      }
-    };
-
-    fetch(process.env.REACT_APP_API_ENDPOINT, {
-      method: "POST",
-      body: JSON.stringify(reqBody),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Registering failed, try again.");
+        variables: {
+          email,
+          username,
+          password
         }
+      };
 
-        return res.json();
-      })
-      .then(resData => console.log(resData))
-      .catch(err => console.log(err));
+      const res = await fetch(process.env.REACT_APP_API_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify(reqBody),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      const parsedRes = await res.json();
+
+      if (parsedRes.errors.length > 0) {
+        setError(parsedRes.errors[0].message);
+      }
+
+      return parsedRes;
+    } catch (err) {
+      throw new Error("Registering failed");
+    }
   };
 
   return (
@@ -58,7 +63,10 @@ const Register = ({ setShowform }) => {
         type="email"
         name="email"
         value={email}
-        onChange={e => setEmail(e.target.value)}
+        onChange={e => {
+          setEmail(e.target.value);
+          setError(null);
+        }}
         id="email"
         placeholder="Email *"
       />
@@ -85,6 +93,7 @@ const Register = ({ setShowform }) => {
       >
         Previous User? Click here!
       </button>
+      {errors && <Error error={errors} />}
     </form>
   );
 };
