@@ -179,8 +179,10 @@ class SingleEventPage extends Component {
                     postComment={this.postComment.bind(this)}
                   />
                 )}
+                <div className="btns">
                 <button onClick={this.toggleModal}>View Comments</button>
                 {this.context.token && <BookEvent eventId={event._id} />}
+                </div>
               </div>
             </li>
           </ul>

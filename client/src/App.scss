@@ -620,20 +620,25 @@ nav {
     align-items: center;
     ul {
       padding: 0;
+      margin: 0;
       display: flex;
       flex-direction: column;
+      align-items: center;
       height: 100%;
       width: 100%;
       li {
-        margin: margin(m-plus-updown);
+        margin: margin(s-plus-updown);
         width: 100%;
         span {
           font-weight: 600;
         }
         .comments {
-          button {
-            margin: margin(m-side);
-            width: 30%;
+          .btns {
+            margin: 2em 0;
+            button {
+              margin: margin(m-side);
+              width: 30%;
+            }
           }
         }
       }
@@ -651,7 +656,7 @@ nav {
       padding: 0;
       margin: 0;
       h3 {
-        margin: 0;
+        margin: margin(m-updown);
       }
       .img-wrapper {
         max-width: 100%;
@@ -662,9 +667,6 @@ nav {
           height: auto;
         }
       }
-      h3 {
-        text-align: right;
-      }
     }
 
     .event-info {
@@ -672,6 +674,7 @@ nav {
       padding: padding(m-side);
       ul {
         width: 100%;
+        margin: 0;
         li {
           width: 100%;
           margin: margin(s-updown);
@@ -679,9 +682,14 @@ nav {
             display: flex;
             flex-direction: column;
             width: 100%;
-            button {
-              width: 100%;
-              margin: margin(s-updown);
+
+            .btns {
+              display: flex;
+              button {
+                width: 45%;
+                margin: margin(m-full);
+                margin-bottom: 5em;
+              }
             }
           }
         }
@@ -877,6 +885,7 @@ nav {
   @include mobile {
     flex-direction: column;
     justify-content: flex-start;
+    margin-top: 1em;
     .profile-pic-username {
       width: 100%;
       margin: 0;

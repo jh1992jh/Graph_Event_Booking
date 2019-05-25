@@ -2,9 +2,6 @@ import React from "react";
 import ProfileEvent from "../profile/ProfileEvent";
 
 const ProfileEventsModal = ({ events, title, toggleModal }) => {
-  events.forEach(event => {
-    console.log(event.date);
-  });
   return (
     <div className="modal-background">
       <div className="modal">
