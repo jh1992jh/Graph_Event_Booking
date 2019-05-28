@@ -1,62 +1,86 @@
-import React, { Component } from "react";
+import React, { useContext, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
 
-import AuthContext from "../../context/auth-context";
+import { UserContext } from "../../context/user-context";
+import { GET_AUTH_USER, LOGOUT } from "../../reducers/types";
 
 import avatar from "../common/avatar.png";
 import desktopLogo from "../common/desktop_logo.png";
 import mobileLogo from "../common/mobile_logo.png";
 
-class Navbar extends Component {
-  state = {
-    userId: null,
-    username: null,
-    profilePic: null
-  };
+const Navbar = () => {
+  const [userCtx, dispatch] = useContext(UserContext);
 
-  static contextType = AuthContext;
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        const token = localStorage.evauthToken;
 
-  async componentDidMount() {
-    try {
-      const token = this.context.token;
-
-      const reqBody = {
-        query: `
-          query GetAuthUser {
-            getAuthUser {
-              _id
-              username
-              profilePic
+        const reqBody = {
+          query: `
+            query GetAuthUser {
+              getAuthUser {
+                _id
+                username
+                profilePic
+                bio
+                joined
+                createdEvents{
+                  _id
+                  
+                }
+                bookedEvents{
+                  _id
+                  event{_id}
+                }
+              }
             }
+          `
+        };
+
+        const authUser = await fetch(process.env.REACT_APP_API_ENDPOINT, {
+          method: "POST",
+          body: JSON.stringify(reqBody),
+          headers: {
+            "Content-type": "application/json",
+            Authorization: token
           }
-        `
-      };
+        });
 
-      const authUser = await fetch(process.env.REACT_APP_API_ENDPOINT, {
-        method: "POST",
-        body: JSON.stringify(reqBody),
-        headers: {
-          "Content-type": "application/json",
-          Authorization: token
-        }
-      });
+        const parsedAuthUser = await authUser.json();
 
-      const parsedAuthUser = await authUser.json();
+        const finalResponse = parsedAuthUser.data.getAuthUser;
+        const {
+          _id,
+          username,
+          profilePic,
+          bio,
+          joined,
+          createdEvents,
+          bookedEvents
+        } = finalResponse;
 
-      const { _id, username, profilePic } = parsedAuthUser.data.getAuthUser;
+        const loggedInUser = {
+          _id,
+          username,
+          profilePic,
+          bio,
+          joined,
+          createdEvents,
+          bookedEvents
+        };
+        dispatch({ type: GET_AUTH_USER, payload: loggedInUser });
 
-      const finalResponse = parsedAuthUser.data.getAuthUser;
+        return finalResponse;
+      } catch (err) {
+        throw err;
+      }
+    };
+    getCurrentUser();
+  }, [dispatch]);
 
-      this.setState({ userId: _id, username, profilePic });
-      return finalResponse;
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  render() {
-    const { userId, username, profilePic } = this.state;
-    return userId !== null && username !== null ? (
+  return (
+    userCtx.user !== null && (
       <nav>
         <div className="logo-wrapper">
           <NavLink to="/">
@@ -81,22 +105,27 @@ class Navbar extends Component {
             </li>
 
             <li id="profile-link">
-              <Link to={`/profile/${userId}`}>
+              <Link to={`/profile/${userCtx.user._id}`}>
                 <div className="profile-thumbnail-wrapper">
-                  <img src={profilePic ? profilePic : avatar} alt="profile" />
+                  <img
+                    src={
+                      userCtx.user.profilePic ? userCtx.user.profilePic : avatar
+                    }
+                    alt="profile"
+                  />
                 </div>
-                <h3>{username}</h3>
+                <h3>{userCtx.user.username}</h3>
               </Link>
             </li>
 
             <li id="logout">
-              <button onClick={this.context.logout}>Logout</button>
+              <button onClick={() => dispatch({ type: LOGOUT })}>Logout</button>
             </li>
           </ul>
         </div>
       </nav>
-    ) : null;
-  }
-}
+    )
+  );
+};
 
 export default Navbar;

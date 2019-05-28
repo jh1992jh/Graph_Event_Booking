@@ -5,7 +5,7 @@ const Register = ({ setShowform }) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setError] = useState("");
+  const [errors, setErrors] = useState("");
 
   const submitSignup = async e => {
     try {
@@ -49,7 +49,7 @@ const Register = ({ setShowform }) => {
 
       if (parsedRes.errors !== undefined) {
         if (parsedRes.errors.length > 0) {
-          setError(parsedRes.errors[0].message);
+          setErrors(parsedRes.errors[0].message);
           return;
         }
       }
@@ -71,7 +71,7 @@ const Register = ({ setShowform }) => {
         value={email}
         onChange={e => {
           setEmail(e.target.value);
-          setError(null);
+          setErrors(null);
         }}
         id="email"
         placeholder="Email *"
@@ -84,7 +84,7 @@ const Register = ({ setShowform }) => {
         value={username}
         onChange={e => {
           setUsername(e.target.value);
-          setError(null);
+          setErrors(null);
         }}
       />
       <input
@@ -94,7 +94,7 @@ const Register = ({ setShowform }) => {
         value={password}
         onChange={e => {
           setPassword(e.target.value);
-          setError(null);
+          setErrors(null);
         }}
       />
       <button type="submit">Sign up</button>
@@ -105,7 +105,7 @@ const Register = ({ setShowform }) => {
       >
         Previous User? Click here!
       </button>
-      {errors && <Error error={errors} />}
+      {errors && <Error error={errors} setErrors={setErrors} />}
     </form>
   );
 };

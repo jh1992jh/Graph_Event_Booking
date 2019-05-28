@@ -1,37 +1,20 @@
-import React, { Component } from "react";
-import AuthContext from "../../context/auth-context";
+import React, { useState } from "react";
 import Success from "../common/Success";
 import Error from "../common/Error";
 
-class CreateEvent extends Component {
-  state = {
-    title: "",
-    eventImg: "",
-    eventLocation: "",
-    price: 0.0,
-    description: "",
-    date: "",
-    showSuccess: false,
-    successTimeout: null,
-    errors: null,
-    errorTimeout: null
-  };
-
-  static contextType = AuthContext;
-
-  async createEvent(e) {
+const CreateEvent = () => {
+  const [title, setTitle] = useState("");
+  const [eventImg, setEventImg] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [price, setPrice] = useState(0.0);
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [errors, setErrors] = useState(null);
+  const createEvent = async e => {
     try {
       e.preventDefault();
-      const {
-        title,
-        eventImg,
-        eventLocation,
-        price,
-        description,
-        date
-      } = this.state;
-      const token = this.context.token;
-
+      const token = localStorage.evauthToken;
       const reqBody = {
         query: `
             mutation CreateEvent($title: String!, $eventImg: String, $eventLocation: String!, $price: Float!, $description: String!, $date: String!) {
@@ -66,132 +49,91 @@ class CreateEvent extends Component {
 
       if (parsedEvent.errors !== undefined) {
         if (parsedEvent.errors.length > 0) {
-          let errorTimeout = setTimeout(
-            () => this.setState({ errors: null }),
-            3000
-          );
-          this.setState({
-            errors: parsedEvent.errors[0].message,
-            errorTimeout: errorTimeout
-          });
+          setErrors(parsedEvent.errors[0].message);
           return;
         }
       }
 
-      this.setState(
-        {
-          title: parsedEvent.data.createEvent.title,
-          eventLocation: parsedEvent.data.createEvent.eventLocation,
-          date: parsedEvent.data.createEvent.date
-        },
-        () => {
-          let successTimeout = setTimeout(() => {
-            this.setState({ showSuccess: false });
-            this.props.history.push("/events");
-          }, 3000);
-          this.setState({ showSuccess: true, successTimeout: successTimeout });
-        }
-      );
+      setTitle(parsedEvent.data.createEvent.title);
+      setEventLocation(parsedEvent.data.createEvent.eventLocation);
+      setDate(parsedEvent.data.createEvent.date);
+
+      setShowSuccess(true);
 
       return parsedEvent;
     } catch (err) {
       throw err;
     }
-  }
-
-  componentWillUnmount() {
-    const { successTimeout, errorTimeout } = this.state;
-    clearTimeout(successTimeout);
-    clearTimeout(errorTimeout);
-    this.setState({ successTimeout: null, errorTimeout: null });
-  }
-
-  onInputChange = e => {
-    this.setState({ [e.target.name]: e.target.value });
   };
-  render() {
-    const {
-      title,
-      eventImg,
-      eventLocation,
-      price,
-      description,
-      date,
-      showSuccess,
-      errors
-    } = this.state;
-
-    return (
-      <div className="create-event">
-        <div className="create-event-form-wrapper">
-          <h1>Create An Event</h1>
-          <form
-            onSubmit={this.createEvent.bind(this)}
-            className="create-event-form"
-          >
-            <input
-              type="text"
-              name="title"
-              id="title"
-              placeholder="Event Title"
-              value={title}
-              onChange={this.onInputChange}
-            />
-            <input
-              type="text"
-              name="eventLocation"
-              id="location"
-              placeholder="Location"
-              value={eventLocation}
-              onChange={this.onInputChange}
-            />
-            <input
-              type="number"
-              name="price"
-              id="price"
-              placeholder="Price"
-              value={price}
-              onChange={this.onInputChange}
-            />
-            <input
-              type="text"
-              name="eventImg"
-              id="eventImg"
-              placeholder="Event Image"
-              value={eventImg}
-              onChange={this.onInputChange}
-            />
-            <input
-              type="date"
-              name="date"
-              id="date"
-              value={date}
-              onChange={this.onInputChange}
-            />
-            <textarea
-              name="description"
-              id="description"
-              cols="30"
-              rows="4"
-              value={description}
-              onChange={this.onInputChange}
-              placeholder="Event Description"
-            />
-            <button type="submit">Submit</button>
-          </form>
-        </div>
-        {showSuccess && (
-          <Success
-            title={title}
-            eventLocation={eventLocation}
-            action="Created"
-            date={new Date(date).toISOString()}
+  return (
+    <div className="create-event">
+      <div className="create-event-form-wrapper">
+        <h1>Create An Event</h1>
+        <form onSubmit={e => createEvent(e)} className="create-event-form">
+          <input
+            type="text"
+            name="title"
+            id="title"
+            placeholder="Event Title"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
           />
-        )}
-        {errors && <Error error={errors} />}
+          <input
+            type="text"
+            name="eventLocation"
+            id="location"
+            placeholder="Location"
+            value={eventLocation}
+            onChange={e => setEventLocation(e.target.value)}
+          />
+          <input
+            type="number"
+            name="price"
+            id="price"
+            placeholder="Price"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+          />
+          <input
+            type="text"
+            name="eventImg"
+            id="eventImg"
+            placeholder="Event Image"
+            value={eventImg}
+            onChange={e => setEventImg(e.target.value)}
+          />
+          <input
+            type="date"
+            name="date"
+            id="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+          />
+          <textarea
+            name="description"
+            id="description"
+            cols="30"
+            rows="4"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            placeholder="Event Description"
+          />
+          <button type="submit">Submit</button>
+        </form>
       </div>
-    );
-  }
-}
+      {showSuccess && (
+        <Success
+          title={title}
+          eventLocation={eventLocation}
+          action="Created"
+          date={new Date(date).toISOString()}
+          setShowSuccess={setShowSuccess}
+          redirectOnSuccess={true}
+        />
+      )}
+      {errors && <Error error={errors} setErrors={setErrors} />}
+    </div>
+  );
+};
 
 export default CreateEvent;

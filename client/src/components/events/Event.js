@@ -3,16 +3,7 @@ import { Link } from "react-router-dom";
 import format from "date-fns/format";
 import placeholder from "../common/placeholder.png";
 
-const Event = ({
-  title,
-  price,
-  date,
-  eventId,
-  description,
-  eventImg,
-  eventLocation,
-  eventOwner
-}) => {
+const Event = ({ title, date, eventId, eventImg, eventLocation }) => {
   return (
     <Fragment>
       <li className="event">

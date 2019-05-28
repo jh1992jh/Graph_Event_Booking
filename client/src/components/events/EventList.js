@@ -8,11 +8,7 @@ const EventList = ({ events, authUser }) => {
         <Event
           key={event._id}
           title={event.title}
-          price={event.price}
-          authUser={authUser}
-          eventOwner={event.user._id}
           date={event.date}
-          description={event.description}
           eventImg={event.eventImg}
           eventLocation={event.eventLocation}
           eventId={event._id}

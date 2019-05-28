@@ -1,32 +1,20 @@
-import React, { Component } from "react";
+import React, { useState, useContext } from "react";
 import { withRouter } from "react-router-dom";
 
-import AuthContext from "../../context/auth-context";
+import { UserContext } from "../../context/user-context";
+import { LOGIN } from "../../reducers/types";
 
 import Error from "../common/Error";
 
-class Login extends Component {
-  state = {
-    email: "",
-    password: "",
-    errors: null
-  };
+const Login = ({ setShowform, history }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState(null);
+  const [userCtx, dispatch] = useContext(UserContext);
 
-  static contextType = AuthContext;
-
-  onInputChange = e => {
-    const { errors } = this.state;
-    this.setState({ [e.target.name]: e.target.value });
-
-    if (errors) {
-      this.setState({ errors: null });
-    }
-  };
-
-  async submitSingup(e) {
+  const submitSingup = async e => {
     try {
       e.preventDefault();
-      const { email, password } = this.state;
 
       const isInvalid =
         email.trim().length === 0 || password.trim().length === 0;
@@ -62,63 +50,56 @@ class Login extends Component {
 
       if (res.status !== 200 && res.status !== 201) {
         const error = await res.json();
-        this.setState({ errors: error.errors[0].message });
+        setErrors(error.errors[0].message);
         return;
       }
 
       const parsedResponse = await res.json();
 
-      this.context.login(
-        `Bearer ${parsedResponse.data.login.token}`,
-        parsedResponse.data.login.userId,
-        parsedResponse.data.login.tokenExp,
-        parsedResponse.data.login.username
-      );
+      const { token, userId, tokenExp, username } = parsedResponse.data.login;
+
+      const auth = { token, userId, tokenExp, username };
 
       localStorage.setItem(
         "evauthToken",
         `Bearer ${parsedResponse.data.login.token}`
       );
 
-      this.props.history.push("/events");
-      return parsedResponse;
+      await dispatch({ type: LOGIN, payload: auth });
+
+      return history.push("/events");
     } catch (err) {
       console.log(err);
     }
-  }
-
-  render() {
-    const { setShowform } = this.props;
-    const { email, password, errors } = this.state;
-    return (
-      <form className="auth-form" onSubmit={e => this.submitSingup(e)}>
-        <input
-          type="email"
-          name="email"
-          value={email}
-          onChange={this.onInputChange}
-          id="email"
-          placeholder="Email *"
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password *"
-          value={password}
-          onChange={this.onInputChange}
-        />
-        <button type="submit">Log in</button>
-        <button
-          type="button"
-          name="register"
-          onClick={e => setShowform(e.target.name)}
-        >
-          New User? Click here!
-        </button>
-        {errors && <Error error={errors} />}
-      </form>
-    );
-  }
-}
+  };
+  return (
+    <form className="auth-form" onSubmit={e => submitSingup(e)}>
+      <input
+        type="email"
+        name="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        id="email"
+        placeholder="Email *"
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Password *"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+      />
+      <button type="submit">Log in</button>
+      <button
+        type="button"
+        name="register"
+        onClick={e => setShowform(e.target.name)}
+      >
+        New User? Click here!
+      </button>
+      {errors && <Error error={errors} setErrors={setErrors} />}
+    </form>
+  );
+};
 
 export default withRouter(Login);

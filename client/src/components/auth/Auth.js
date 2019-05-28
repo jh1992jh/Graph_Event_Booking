@@ -1,34 +1,17 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import { withRouter } from "react-router-dom";
 import Register from "./Register";
 import Login from "./Login";
-import AuthContext from "../../context/auth-context";
 
-class Auth extends Component {
-  state = {
-    showForm: "login"
-  };
-
-  static contextType = AuthContext;
-
-  componentDidMount() {
-    this.context.token && this.props.history.push("/events");
+const Auth = () => {
+  const [showForm, setShowform] = useState("login");
+  let displayForm;
+  if (showForm === "login") {
+    displayForm = <Login setShowform={setShowform} />;
+  } else {
+    displayForm = <Register setShowform={setShowform} />;
   }
-  setShowform = val => {
-    this.setState({ showForm: val });
-  };
-  render() {
-    const { showForm } = this.state;
-    return (
-      <div className="auth">
-        {showForm === "login" ? (
-          <Login setShowform={this.setShowform} />
-        ) : (
-          <Register setShowform={this.setShowform} />
-        )}
-      </div>
-    );
-  }
-}
+  return <div className="auth">{displayForm}</div>;
+};
 
 export default withRouter(Auth);

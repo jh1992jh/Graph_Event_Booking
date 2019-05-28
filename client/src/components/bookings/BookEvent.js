@@ -1,18 +1,15 @@
-import React, { Component, Fragment } from "react";
-import AuthContext from "../../context/auth-context";
+import React, { useState, Fragment } from "react";
+import { withRouter } from "react-router-dom";
 
 import Success from "../common/Success";
 
-class BookEvent extends Component {
-  state = {
-    showSuccess: false,
-    timerId: null
-  };
-  static contextType = AuthContext;
+const BookEvent = props => {
+  const [showSuccess, setShowSuccess] = useState(false);
+  // const [showSuccessTimeoutId, setTimeoutId] = useState(null);
 
-  async bookEventFun(eventId) {
+  const bookEventFun = async () => {
     try {
-      const token = this.context.token;
+      const token = localStorage.evauthToken;
       const reqBody = {
         query: `
                 mutation BookEvent($eventId: ID!){
@@ -24,11 +21,11 @@ class BookEvent extends Component {
                 }
               `,
         variables: {
-          eventId
+          eventId: props.match.params.eventId
         }
       };
 
-      const booking = await fetch(process.env.REACT_APP_API_ENDPOINT, {
+      await fetch(process.env.REACT_APP_API_ENDPOINT, {
         method: "POST",
         body: JSON.stringify(reqBody),
         headers: {
@@ -36,46 +33,28 @@ class BookEvent extends Component {
           Authorization: token
         }
       });
-      const parsedBooking = await booking.json();
 
-      const finalResult = parsedBooking.data.bookEvent;
-      this.setState({ showSuccess: true });
-      const successTimeout = setTimeout(
-        () => this.setState({ showSuccess: false }),
-        3000
-      );
-      this.setState({ timerId: successTimeout });
-      return finalResult;
+      setShowSuccess(true);
+      return;
     } catch (err) {
       throw err;
     }
-  }
+  };
 
-  componentWillUnmount() {
-    const { timerId } = this.state;
-    clearTimeout(timerId);
-    this.setState({ timerId: null });
-  }
+  return (
+    <Fragment>
+      <button onClick={() => bookEventFun()}>Book Event</button>
+      {showSuccess && (
+        <Success
+          action="Booked"
+          title={null}
+          eventLocation={null}
+          date={null}
+          setShowSuccess={setShowSuccess}
+        />
+      )}
+    </Fragment>
+  );
+};
 
-  render() {
-    const { eventId } = this.props;
-    const { showSuccess } = this.state;
-    return (
-      <Fragment>
-        <button onClick={this.bookEventFun.bind(this, eventId)}>
-          Book Event
-        </button>
-        {showSuccess && (
-          <Success
-            action="Booked"
-            title={null}
-            eventLocation={null}
-            date={null}
-          />
-        )}
-      </Fragment>
-    );
-  }
-}
-
-export default BookEvent;
+export default withRouter(BookEvent);

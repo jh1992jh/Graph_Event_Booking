@@ -1,0 +1,10 @@
+export const LOGIN = "LOGIN";
+export const GET_AUTH_USER = "GET_AUTH_USER";
+export const LOGOUT = "LOGOUT";
+export const GET_CURRENT_PROFILE = "GET_CURRENT_PROFILE";
+export const EDIT_PROFILE = "EDIT_PROFILE";
+export const CLEAR_CURRENT_PROFILE = "CLEAR_CURRENT_PROFILE";
+export const GET_EVENTS = "GET_EVENTS";
+export const GET_EVENT = "GET_EVENT";
+export const CLEAR_EVENT = "CLEAR_EVENT";
+export const ADD_COMMENT = "ADD_COMMENT";

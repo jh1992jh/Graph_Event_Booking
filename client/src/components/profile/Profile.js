@@ -1,244 +1,168 @@
-import React, { Component, Fragment } from "react";
+import React, { useContext, useEffect, useState, Fragment } from "react";
 import format from "date-fns/format";
-import AuthContext from "../../context/auth-context";
 import avatar from "../common/avatar.png";
 import Loading from "../common/Loading";
 import EditProfileModal from "../modal/EditProfileModal";
 import ProfileEventsModal from "../modal/ProfileEventsModal";
+import { UserContext } from "../../context/user-context";
+import {
+  GET_CURRENT_PROFILE,
+  CLEAR_CURRENT_PROFILE
+} from "../../reducers/types";
 
-class Profile extends Component {
-  state = {
-    username: "",
-    bio: "",
-    bioInput: "",
-    joined: "",
-    profilePic: "",
-    profilePicInput: "",
-    bookedEvents: [],
-    createdEvents: [],
-    showModal: null
-  };
-
+const Profile = ({ match }) => {
+  const [userCtx, dispatch] = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState("");
   /* TODO: WRITE COMPONENTWILLRECIEVEPROPS method that compares the current profileId at the url to the one in the state, if they do not match that means it's a different profile so fetch profile info for the new profile and set it to state */
-
-  static contextType = AuthContext;
-  async componentDidMount() {
-    this.fetchProfile();
-  }
-
-  async fetchProfile() {
-    try {
-      const token = this.context.token;
-      const reqBody = {
-        query: `
-                query GetUser($userId: ID!){
-                    getUser(userId: $userId) {
-                        username
-                        bio
-                        profilePic
-                        joined
-                        bookedEvents {
-                          event {
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.evauthToken;
+        const reqBody = {
+          query: `
+                  query GetUser($userId: ID!){
+                      getUser(userId: $userId) {
+                          _id
+                          username
+                          bio
+                          profilePic
+                          joined
+                          bookedEvents {
+                            event {
+                              _id
+                              title
+                              eventImg
+                              eventLocation
+                            }
+                          }
+                          createdEvents {
                             _id
                             title
                             eventImg
                             eventLocation
                           }
-                        }
-                        createdEvents {
-                          _id
-                          title
-                          eventImg
-                          eventLocation
-                        }
-                    }
-                }
-            `,
-        variables: {
-          userId: this.props.match.params.profileId
-        }
-      };
-
-      const user = await fetch(process.env.REACT_APP_API_ENDPOINT, {
-        method: "POST",
-        body: JSON.stringify(reqBody),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token
-        }
-      });
-
-      const parsedUser = await user.json();
-
-      const finalResponse = parsedUser.data.getUser;
-
-      const transformedBookings = finalResponse.bookedEvents.map(
-        booking => booking.event
-      );
-
-      this.setState({
-        username: finalResponse.username,
-        bio: finalResponse.bio,
-        bioInput: finalResponse.bio,
-        joined: finalResponse.joined,
-        profilePic:
-          finalResponse.profilePic !== null ? finalResponse.profilePic : avatar,
-        profilePicInput:
-          finalResponse.profilePic !== null ? finalResponse.profilePic : avatar,
-        createdEvents: finalResponse.createdEvents,
-        bookedEvents: transformedBookings
-      });
-
-      return finalResponse;
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  async editProfile() {
-    try {
-      const { bioInput, profilePicInput } = this.state;
-      const token = this.context.token;
-      const reqBody = {
-        query: `
-        mutation EditProfile($bio: String!, $profilePic: String!) {
-          editProfile(bio: $bio, profilePic: $profilePic) {
-            username
-            bio
-            profilePic
-            joined
+                      }
+                  }
+              `,
+          variables: {
+            userId: match.params.profileId
           }
-        }
-      `,
-        variables: {
-          bio: bioInput,
-          profilePic: profilePicInput
-        }
-      };
+        };
 
-      const profile = await fetch(process.env.REACT_APP_API_ENDPOINT, {
-        method: "POST",
-        body: JSON.stringify(reqBody),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token
-        }
-      });
+        const user = await fetch(process.env.REACT_APP_API_ENDPOINT, {
+          method: "POST",
+          body: JSON.stringify(reqBody),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token
+          }
+        });
 
-      const parsedProfile = await profile.json();
-      console.log(parsedProfile.data);
-      const editedProfile = parsedProfile.data.editProfile;
-      console.log(editedProfile);
-      this.setState({
-        bio: editedProfile.bio,
-        profilePic: editedProfile.profilePic
-      });
-      return editedProfile;
-    } catch (err) {
-      throw err;
-    }
-  }
+        const parsedUser = await user.json();
 
-  toggleModal = val => {
-    this.setState({ showModal: val });
-  };
+        const finalResponse = parsedUser.data.getUser;
 
-  onInputChange = e => {
-    this.setState({ [e.target.name]: e.target.value });
-  };
+        const transformedBookings = finalResponse.bookedEvents.map(
+          booking => booking.event
+        );
 
-  render() {
-    const {
-      username,
-      bio,
-      bioInput,
-      joined,
-      profilePic,
-      profilePicInput,
-      showModal,
-      bookedEvents,
-      createdEvents
-    } = this.state;
-    const authUser = this.context.userId;
-    const currentProfile = this.props.match.params.profileId;
-    const isLoaded =
-      username.length !== 0 ||
-      bio.length !== 0 ||
-      joined.length !== 0 ||
-      profilePic.length !== 0;
-    return (
-      <div className="profile">
-        {isLoaded ? (
-          <Fragment>
-            <section className="profile-pic-username">
-              <img
-                src={profilePic}
-                onError={e => {
-                  e.target.onerror = null;
-                  e.target.src = avatar;
-                }}
-                alt="profile"
-              />
-              <h1>{username}</h1>
-            </section>
-            <section className="profile-info">
-              <div className="profile-info-bio">
-                <div className="bio-and-joined">
-                  <h3>Joined: </h3>
-                  <p>{format(joined, "Do MMM YYYY")}</p>
-                  <h3>Bio:</h3>
+        const profile = {
+          userId: finalResponse._id,
+          username: finalResponse.username,
+          bio: finalResponse.bio,
+          joined: finalResponse.joined,
+          profilePic:
+            finalResponse.profilePic !== null
+              ? finalResponse.profilePic
+              : avatar,
+          createdEvents: finalResponse.createdEvents,
+          bookedEvents: transformedBookings
+        };
 
-                  <p>
-                    {bio
-                      ? bio
-                      : "The User has not written a bio for themselves yet."}
-                  </p>
-                </div>
+        dispatch({ type: GET_CURRENT_PROFILE, payload: profile });
+        setLoading(false);
+        return finalResponse;
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchProfile();
+
+    return () => dispatch({ type: CLEAR_CURRENT_PROFILE });
+  }, [dispatch, match.params.profileId]);
+
+  return (
+    <div className="profile">
+      {userCtx.currentProfile && !loading ? (
+        <Fragment>
+          <section className="profile-pic-username">
+            <img
+              src={userCtx.currentProfile.profilePic}
+              onError={e => {
+                e.target.onerror = null;
+                e.target.src = avatar;
+              }}
+              alt="profile"
+            />
+            <h1>{userCtx.currentProfile.username}</h1>
+          </section>
+          <section className="profile-info">
+            <div className="profile-info-bio">
+              <div className="bio-and-joined">
+                <h3>Joined: </h3>
+                <p>{format(userCtx.currentProfile.joined, "Do MMM YYYY")}</p>
+                <h3>Bio:</h3>
+
+                <p>
+                  {userCtx.currentProfile.bio
+                    ? userCtx.currentProfile.bio
+                    : "The User has not written a bio for themselves yet."}
+                </p>
               </div>
-              <div className="events">
-                <button onClick={() => this.toggleModal("booked")}>
-                  {bookedEvents.length} | Booked
+            </div>
+            <div className="events">
+              <button onClick={() => setShowModal("booked")}>
+                {userCtx.currentProfile.bookedEvents.length} | Booked
+              </button>
+              {showModal === "booked" && (
+                <ProfileEventsModal
+                  title="Booked"
+                  toggleModal={setShowModal}
+                  events={userCtx.currentProfile.bookedEvents}
+                />
+              )}
+              <button onClick={() => setShowModal("created")}>
+                {userCtx.currentProfile.createdEvents.length} | Created
+              </button>
+              {showModal === "created" && (
+                <ProfileEventsModal
+                  title="Created"
+                  toggleModal={setShowModal}
+                  events={userCtx.currentProfile.createdEvents}
+                />
+              )}
+              {userCtx.auth.userId === userCtx.currentProfile.userId && (
+                <button onClick={() => setShowModal("edit")}>
+                  Edit Profile
                 </button>
-                {showModal === "booked" && (
-                  <ProfileEventsModal
-                    title="Booked"
-                    toggleModal={this.toggleModal}
-                    events={bookedEvents}
-                  />
-                )}
-                <button onClick={() => this.toggleModal("created")}>
-                  {createdEvents.length} | Created
-                </button>
-                {showModal === "created" && (
-                  <ProfileEventsModal
-                    title="Created"
-                    toggleModal={this.toggleModal}
-                    events={createdEvents}
-                  />
-                )}
-                {authUser === currentProfile && (
-                  <button onClick={() => this.toggleModal("edit")}>
-                    Edit Profile
-                  </button>
-                )}
-                {showModal === "edit" && (
-                  <EditProfileModal
-                    bioInput={bioInput}
-                    profilePicInput={profilePicInput}
-                    onInputChange={this.onInputChange}
-                    editProfile={this.editProfile.bind(this)}
-                    toggleModal={this.toggleModal}
-                  />
-                )}
-              </div>
-            </section>
-          </Fragment>
-        ) : (
-          <Loading />
-        )}
-      </div>
-    );
-  }
-}
+              )}
+              {showModal === "edit" && (
+                <EditProfileModal
+                  bio={userCtx.currentProfile.bio}
+                  profilePic={userCtx.currentProfile.profilePic}
+                  toggleModal={setShowModal}
+                />
+              )}
+            </div>
+          </section>
+        </Fragment>
+      ) : (
+        <Loading />
+      )}
+    </div>
+  );
+};
 
 export default Profile;

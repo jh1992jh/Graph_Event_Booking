@@ -508,6 +508,7 @@ nav {
     @include mobile {
       .events-section {
         .event-list {
+          margin-bottom: 3em;
           width: 100%;
           .event {
             width: 100%;
@@ -901,6 +902,7 @@ nav {
     .profile-info {
       width: 100%;
       margin: 0;
+      margin-bottom: 5em;
       .profile-info-bio {
         padding: padding(s-plus-side);
       }
